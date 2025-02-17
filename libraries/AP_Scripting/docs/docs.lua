@@ -4235,7 +4235,7 @@ function DroneCAN_Handle_ud:subscribe() end
 
 -- check if a new message has arrived for a request or subscription
 ---@return string payload -- payload of the message
----@return nodeid number -- node ID the message came from
+---@return number nodeid -- node ID the message came from
 function DroneCAN_Handle_ud:check_message() end
 
 -- make a DroneCAN request
