@@ -214,7 +214,7 @@ bool AP_CRSF_Telem::process_rf_mode_changes()
     if (!uart->is_initialized()) {
         return false;
     }
-#if !defined (STM32H7)
+#if !defined (STM32H7) && (CONFIG_HAL_BOARD == HAL_BOARD_CHIBIOS)
     // warn the user if their setup is sub-optimal, H7 does not need DMA on serial port
     if (_telem_bootstrap_msg_pending && !uart->is_dma_enabled()) {
         GCS_SEND_TEXT(MAV_SEVERITY_WARNING, "%s: running on non-DMA serial port", get_protocol_string());
