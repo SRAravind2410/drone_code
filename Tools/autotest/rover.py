@@ -6886,6 +6886,61 @@ Brakes have negligible effect (with=%0.2fm without=%0.2fm delta=%0.2fm)
         self.context_pop()
         self.reboot_sitl()
 
+    def convert_COMMAND_LONG_to_COMMAND_INT(self):
+        '''test the convert_COMMAND_LONG_to_COMMAND_INT function'''
+        self.change_mode('GUIDED')
+        self.wait_ready_to_arm()
+        self.run_cmd(
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME,
+            p5=0,  # lat
+            p6=0,  # lng
+            p7=0,  # alt
+        )
+
+        self.run_cmd(
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME,
+            p5=10,  # lat
+            p6=20,  # lng
+            p7=30,  # alt
+        )
+        self.assert_home_position_at(10, 20, 30)
+
+        self.progress("Ensure NaN is bounced")
+        self.run_cmd(
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME,
+            p5=float("NaN"),  # lat
+            p6=10,  # lng
+            p7=10,  # alt
+            want_result=mavutil.mavlink.MAV_RESULT_DENIED,
+        )
+
+        self.progress("Ensure INF is bounced")
+        self.run_cmd(
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME,
+            p5=float("Inf"),  # lat
+            p6=10,  # lng
+            p7=10,  # alt
+            want_result=mavutil.mavlink.MAV_RESULT_DENIED,
+        )
+
+        self.progress("Ensure OOB lat is bounced")
+        self.run_cmd(
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME,
+            p5=91,  # lat
+            p6=10,  # lng
+            p7=10,  # alt
+            want_result=mavutil.mavlink.MAV_RESULT_DENIED,
+        )
+
+        self.progress("Ensure OOB lng is bounced")
+        self.run_cmd(
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME,
+            p5=10,  # lat
+            p6=190,  # lng
+            p7=10,  # alt
+            want_result=mavutil.mavlink.MAV_RESULT_DENIED,
+        )
+
     def tests(self):
         '''return list of all tests'''
         ret = super(AutoTestRover, self).tests()
@@ -6986,6 +7041,7 @@ Brakes have negligible effect (with=%0.2fm without=%0.2fm delta=%0.2fm)
             self.JammingSimulation,
             self.BatteryInvalid,
             self.REQUIRE_LOCATION_FOR_ARMING,
+            self.convert_COMMAND_LONG_to_COMMAND_INT,
         ])
         return ret
 
