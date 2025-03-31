@@ -484,13 +484,13 @@ const AP_Param::GroupInfo GCS_MAVLINK_Parameters::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("ADSB",   9, GCS_MAVLINK_Parameters, streamRates[9],  0),
 
-    // @Param: SIGNING
-    // @DisplayName: Enable MAVLINK2 signing
-    // @Description: Enable MAVLINK2 signing for this specific channel
-    // @Values: 0:Disabled, 1:Enabled
+    // @Param: OPTIONS
+    // @DisplayName: Bitmask for configuring this telemetry channel
+    // @Description: Bitmask for configuring this telemetry channel. For having effect on all channels, set the relevant mask in all SRx_OPTIONS parameters. Keep in mind that part of the flags may require a reboot to take action.
     // @RebootRequired: True
     // @User: Standard
-    AP_GROUPINFO("SIGNING", 10, GCS_MAVLINK_Parameters, enableMavLink2Signing, 1),
+    // @Bitmask: 0:Enable MavLink2 signing (Reboot required)
+    AP_GROUPINFO("OPTIONS", 10, GCS_MAVLINK_Parameters, options, SR_OPTIONS_ENABLE_MAVLINK2_SINGING),
 AP_GROUPEND
 };
 
