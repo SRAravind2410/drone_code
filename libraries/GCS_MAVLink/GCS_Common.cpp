@@ -134,6 +134,7 @@ GCS_MAVLINK::GCS_MAVLINK(GCS_MAVLINK_Parameters &parameters,
     _port = &uart;
 
     streamRates = parameters.streamRates;
+    srOptions = parameters.options;
 }
 
 bool GCS_MAVLINK::init(uint8_t instance)
