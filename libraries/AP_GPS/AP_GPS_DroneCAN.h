@@ -124,13 +124,14 @@ private:
         uint8_t instance;
         uint32_t last_inject_ms;
         AP_GPS_DroneCAN* driver;
-    } _detected_modules[GPS_MAX_RECEIVERS];
+    } _detected_modules[GPS_MAX_INSTANCES];
 
     static HAL_Semaphore _sem_registry;
 
 #if GPS_MOVING_BASELINE
     // RTCM3 parser for when in moving baseline base mode
     RTCM3_Parser *rtcm3_parser;
+    uint32_t last_base_warning_ms;
 #endif
     // the role set from GPS_TYPE
     AP_GPS::GPS_Role role;
