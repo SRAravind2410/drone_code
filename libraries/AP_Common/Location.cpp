@@ -101,7 +101,7 @@ Location::AltFrame Location::get_alt_frame() const
     return AltFrame::ABSOLUTE;
 }
 
-/// get altitude in desired frame
+/// get altitude in desired frame.  Must not change ret_alt_cm unless true is returned!
 bool Location::get_alt_cm(AltFrame desired_frame, int32_t &ret_alt_cm) const
 {
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
@@ -205,6 +205,7 @@ bool Location::get_alt_cm(AltFrame desired_frame, int32_t &ret_alt_cm) const
     }
     return false;  // LCOV_EXCL_LINE  - not reachable
 }
+//  Must not change ret_alt_cm unless true is returned!
 bool Location::get_alt_m(AltFrame desired_frame, float &ret_alt) const
 {
     int32_t ret_alt_cm;
@@ -276,6 +277,22 @@ ftype Location::get_distance(const Location &loc2) const
 // return the altitude difference in meters taking into account alt frame.
 bool Location::get_alt_distance(const Location &loc2, ftype &distance) const
 {
+    if (get_alt_frame() == loc2.get_alt_frame()) {
+        switch (get_alt_frame()) {
+        case AltFrame::ABSOLUTE:
+        case AltFrame::ABOVE_HOME:
+        case AltFrame::ABOVE_ORIGIN:
+            // all of these use the same reference
+            distance = (alt - loc2.alt) * 0.01;
+            return true;
+        case AltFrame::ABOVE_TERRAIN:
+            // 1m above terrain here is not the same as 1m above
+            // terrain at loc2, so convert both to absolute and then
+            // subtract.
+            break;
+        }
+    }
+
     int32_t alt1, alt2;
     if (!get_alt_cm(AltFrame::ABSOLUTE, alt1) || !loc2.get_alt_cm(AltFrame::ABSOLUTE, alt2)) {
         return false;

@@ -101,6 +101,10 @@ bool Mode::enter()
     plane.target_altitude.terrain_following_pending = false;
 #endif
 
+#if AP_PLANE_SYSTEMID_ENABLED
+    plane.g2.systemid.stop();
+#endif
+
     // disable auto mode servo idle during altitude wait command
     plane.auto_state.idle_mode = false;
 
@@ -151,6 +155,12 @@ bool Mode::enter()
             float aspeed;
             bool have_airspeed = quadplane.ahrs.airspeed_estimate(aspeed);
             quadplane.assisted_flight = quadplane.assist.should_assist(aspeed, have_airspeed);
+        }
+
+        if (is_vtol_mode() && !quadplane.tailsitter.enabled()) {
+            // if flying inverted and entering a VTOL mode cancel
+            // inverted flight
+            plane.inverted_flight = false;
         }
 #endif
     }

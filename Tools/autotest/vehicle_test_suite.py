@@ -2696,8 +2696,6 @@ class TestSuite(ABC):
             "SIM_MAG1_OFS_X",
             "SIM_MAG1_OFS_Y",
             "SIM_MAG1_OFS_Z",
-            "SIM_PARA_ENABLE",
-            "SIM_PARA_PIN",
             "SIM_SHIP_DSIZE",
             "SIM_SHIP_ENABLE",
             "SIM_SHIP_OFS_X",
@@ -2706,7 +2704,6 @@ class TestSuite(ABC):
             "SIM_SHIP_PSIZE",
             "SIM_SHIP_SPEED",
             "SIM_SHIP_SYSID",
-            "SIM_TA_ENABLE",
             "SIM_VIB_FREQ_X",
             "SIM_VIB_FREQ_Y",
             "SIM_VIB_FREQ_Z",
@@ -4368,12 +4365,28 @@ class TestSuite(ABC):
             enum_name = m.fieldenums_by_name.get(fieldname, None)
             if enum_name is not None:
                 enum = mavutil.mavlink.enums[enum_name]
-                if value not in enum:
-                    raise ValueError("Expected value %s not in enum %s" % (value, enum_name))
-                if got not in enum:
-                    raise ValueError("Received value %s not in enum %s" % (value, enum_name))
-                value_string = "%s (%s)" % (value, enum[value].name)
-                got_string = "%s (%s)" % (got, enum[got].name)
+                if getattr(enum, "bitmask", None):
+                    value_strings = []
+                    value_copy = value
+                    shift_value = 1
+                    while value_copy != 0:
+                        if value_copy & 0x1:
+                            value_strings.append(enum[shift_value].name)
+                        else:
+                            value_strings.append("!" + enum[shift_value].name)
+                        shift_value += 1
+                        value_copy = value_copy >> 1
+                    value_string = f"{value_string} {'|'.join(value_strings)}"
+                elif enum_name != 'AIRSPEED_SENSOR_FLAGS':
+                    # once the ".bitmask" attribute on enumerations
+                    # becomes uniquitous the check the
+                    # AIRSPEED_SENSOR_FLAGS can be removed.
+                    if value not in enum:
+                        raise ValueError(f"Expected value {value} not in enum {enum}")
+                    if got not in enum:
+                        raise ValueError(f"Received value {got} not in enum {enum}")
+                    value_string = "{value} ({enum[value].name})"
+                    got_string = "{got} ({enum[got].name})"
 
             if not self.message_has_field_values_field_values_equal(
                     fieldname, value, got, epsilon=epsilon
@@ -6252,7 +6265,8 @@ class TestSuite(ABC):
             return
         raise ValueError("Failed to set parameters (%s)" % want)
 
-    def check_parameter_value(self, name, expected_value, max_error_percent):
+    # FIXME: modify assert_parameter_value to take epsilon_pct instead:
+    def assert_parameter_value_pct(self, name, expected_value, max_error_percent):
         value = self.get_parameter_direct(name, verbose=False)
 
         # Convert to ratio and find limits
@@ -6270,7 +6284,7 @@ class TestSuite(ABC):
 
         # Check value is within limits
         if (value > upper_limit) or (value < lower_limit):
-            raise ValueError("%s expected %f ± %f%% (%f to %f) got %s with %f%% error" % (
+            raise ValueError("%s expected %f +/- %f%% (%f to %f) got %s with %f%% error" % (
                 name,
                 expected_value,
                 max_error_percent,
@@ -7383,12 +7397,14 @@ class TestSuite(ABC):
             **kwargs
         )
 
-    def wait_roll(self, roll, accuracy, timeout=30, **kwargs):
+    def wait_roll(self, roll, accuracy, timeout=30, absolute_value=False, **kwargs):
         """Wait for a given roll in degrees."""
         def get_roll(timeout2):
             msg = self.assert_receive_message('ATTITUDE', timeout=timeout2)
             p = math.degrees(msg.pitch)
             r = math.degrees(msg.roll)
+            if absolute_value:
+                r = abs(r)
             self.progress("Roll %d Pitch %d" % (r, p))
             return r
 
@@ -12513,7 +12529,7 @@ switch value'''
                 self.assert_no_capability(mavutil.mavlink.MAV_PROTOCOL_CAPABILITY_FLIGHT_TERMINATION)
             self.set_parameters({
                 "AFS_ENABLE": 1,
-                "SYSID_MYGCS": self.mav.source_system,
+                "MAV_GCS_SYSID": self.mav.source_system,
             })
             self.drain_mav()
             self.assert_capability(mavutil.mavlink.MAV_PROTOCOL_CAPABILITY_FLIGHT_TERMINATION)
@@ -12582,6 +12598,28 @@ switch value'''
             pass
         if ex is not None:
             raise ex
+
+    def AdvancedFailsafeBadBaro(self):
+        '''ensure GPS can be used as a fallback in case of baro dying'''
+        self.set_parameters({
+            "AFS_ENABLE": 1,
+            "MAV_GCS_SYSID": self.mav.source_system,
+            "AFS_AMSL_LIMIT": 1000,
+            "AFS_QNH_PRESSURE": 1000,
+            "AFS_AMSL_ERR_GPS": 10,
+        })
+        self.wait_ready_to_arm()
+        self.start_subtest("Ensuring breaking baros doesn't terminate")
+        self.set_parameters({
+            "SIM_BARO_DISABLE": 1,
+            "SIM_BAR2_DISABLE": 1,
+        })
+        self.delay_sim_time(10)
+        self.start_subtest("Ensuring breaking GPS does now terminate")
+        self.set_parameters({
+            "SIM_GPS1_ENABLE": 0,
+        })
+        self.wait_statustext("Terminating due to fence breach")
 
     def drain_mav_seconds(self, seconds):
         tstart = self.get_sim_time_cached()

@@ -122,6 +122,7 @@
 #endif
 #include "AP_Arming_Plane.h"
 #include "pullup.h"
+#include "systemid.h"
 
 /*
   main APM:Plane class
@@ -180,6 +181,9 @@ public:
 #endif
 #if AP_PLANE_GLIDER_PULLUP_ENABLED
     friend class GliderPullup;
+#endif
+#if AP_PLANE_SYSTEMID_ENABLED
+    friend class AP_SystemID;
 #endif
 
     Plane(void);
@@ -1153,7 +1157,6 @@ private:
     void set_throttle(void);
     void set_takeoff_expected(void);
     void set_servos_flaps(void);
-    void set_landing_gear(void);
     void dspoiler_update(void);
     void airbrake_update(void);
     void landing_neutral_control_surface_servos(void);

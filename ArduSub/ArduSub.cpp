@@ -208,9 +208,6 @@ void Sub::ten_hz_logging_loop()
     if (should_log(MASK_LOG_IMU) || should_log(MASK_LOG_IMU_FAST) || should_log(MASK_LOG_IMU_RAW)) {
         AP::ins().Write_Vibration();
     }
-    if (should_log(MASK_LOG_CTUN)) {
-        attitude_control.control_monitor_log();
-    }
 #if HAL_MOUNT_ENABLED
     if (should_log(MASK_LOG_CAMERA)) {
         camera_mount.write_log();
@@ -280,7 +277,7 @@ void Sub::three_hz_loop()
 void Sub::one_hz_loop()
 {
     // sync MAVLink system ID
-    mavlink_system.sysid = g.sysid_this_mav;
+    mavlink_system.sysid = gcs().sysid_this_mav();
 
     bool arm_check = arming.pre_arm_checks(false);
     ap.pre_arm_check = arm_check;
