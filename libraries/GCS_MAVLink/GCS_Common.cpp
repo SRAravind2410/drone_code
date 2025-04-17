@@ -2776,6 +2776,8 @@ void GCS::create_gcs_mavlink_backend(AP_HAL::UARTDriver &uart)
         return;
     }
 
+    // fill in the device ID
+
     _num_gcs++;
 }
 
