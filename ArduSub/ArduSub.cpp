@@ -263,11 +263,6 @@ void Sub::three_hz_loop()
     // check if we've lost terrain data
     failsafe_terrain_check();
 
-#if AP_FENCE_ENABLED
-    // check if we have breached a fence
-    fence_check();
-#endif // AP_FENCE_ENABLED
-
 #if AP_SERVORELAYEVENTS_ENABLED
     ServoRelayEvents.update_events();
 #endif
@@ -276,9 +271,6 @@ void Sub::three_hz_loop()
 // one_hz_loop - runs at 1Hz
 void Sub::one_hz_loop()
 {
-    // sync MAVLink system ID
-    mavlink_system.sysid = gcs().sysid_this_mav();
-
     bool arm_check = arming.pre_arm_checks(false);
     ap.pre_arm_check = arm_check;
     AP_Notify::flags.pre_arm_check = arm_check;
