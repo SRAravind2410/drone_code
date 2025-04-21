@@ -387,9 +387,6 @@ void Plane::trim_radio()
  */
 bool Plane::rc_throttle_value_ok(void) const
 {
-    if (ThrFailsafe(g.throttle_fs_enabled.get()) == ThrFailsafe::Disabled) {
-        return true;
-    }
     if (channel_throttle->get_reverse()) {
         return channel_throttle->get_radio_in() < g.throttle_fs_value;
     }
@@ -402,6 +399,10 @@ bool Plane::rc_throttle_value_ok(void) const
  */
 bool Plane::rc_failsafe_active(void) const
 {
+    if ( ThrFailsafe(g.throttle_fs_enabled.get()) == ThrFailsafe::Disabled) {
+        return false;
+    }
+    
     if (!rc_throttle_value_ok()) {
         return true;
     }
