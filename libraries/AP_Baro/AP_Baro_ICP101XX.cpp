@@ -49,13 +49,13 @@ extern const AP_HAL::HAL &hal;
 /*
   constructor
  */
-AP_Baro_ICP101XX::AP_Baro_ICP101XX(AP_Baro &baro, AP_HAL::I2CDevice &_dev)
+AP_Baro_ICP101XX::AP_Baro_ICP101XX(AP_Baro &baro, AP_HAL::Device &_dev)
     : AP_Baro_Backend(baro)
     , dev(&_dev)
 {
 }
 
-AP_Baro_Backend *AP_Baro_ICP101XX::probe(AP_Baro &baro, AP_HAL::I2CDevice &dev)
+AP_Baro_Backend *AP_Baro_ICP101XX::probe(AP_Baro &baro, AP_HAL::Device &dev)
 {
     AP_Baro_ICP101XX *sensor = NEW_NOTHROW AP_Baro_ICP101XX(baro, dev);
     if (!sensor || !sensor->init()) {
