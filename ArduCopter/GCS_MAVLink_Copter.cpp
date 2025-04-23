@@ -679,12 +679,12 @@ MAV_RESULT GCS_MAVLINK_Copter::handle_MAV_CMD_DO_CHANGE_SPEED(const mavlink_comm
         // param4 : unused
         if (packet.param2 > 0.0f) {
             if (packet.param1 > 2.9f) { // 3 = speed down
-                if (copter.flightmode->set_speed_down(packet.param2 * 100.0f)) {
+                if (copter.flightmode->set_speed_down_cms(packet.param2 * 100.0f)) {
                     return MAV_RESULT_ACCEPTED;
                 }
                 return MAV_RESULT_FAILED;
             } else if (packet.param1 > 1.9f) { // 2 = speed up
-                if (copter.flightmode->set_speed_up(packet.param2 * 100.0f)) {
+                if (copter.flightmode->set_speed_up_cms(packet.param2 * 100.0f)) {
                     return MAV_RESULT_ACCEPTED;
                 }
                 return MAV_RESULT_FAILED;
@@ -1010,10 +1010,10 @@ void GCS_MAVLINK_Copter::handle_message_set_attitude_target(const mavlink_messag
                 climb_rate_or_thrust = 0.0f;
             } else if (packet.thrust > 0.5f) {
                 // climb at up to WPNAV_SPEED_UP
-                climb_rate_or_thrust = (packet.thrust - 0.5f) * 2.0f * copter.wp_nav->get_default_speed_up();
+                climb_rate_or_thrust = (packet.thrust - 0.5f) * 2.0f * copter.wp_nav->get_default_speed_up_cms();
             } else {
                 // descend at up to WPNAV_SPEED_DN
-                climb_rate_or_thrust = (0.5f - packet.thrust) * 2.0f * -copter.wp_nav->get_default_speed_down();
+                climb_rate_or_thrust = (0.5f - packet.thrust) * 2.0f * -copter.wp_nav->get_default_speed_down_cms();
             }
         }
 
