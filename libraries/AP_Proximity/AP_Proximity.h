@@ -28,7 +28,9 @@
 
 #include <AP_HAL/Semaphores.h>
 
-#define PROXIMITY_MAX_INSTANCES             5   // Maximum number of proximity sensor instances available on this platform
+#ifndef PROXIMITY_MAX_INSTANCES 
+  #define PROXIMITY_MAX_INSTANCES             5   // Maximum number of proximity sensor instances available on this platform
+#endif
 #define PROXIMITY_SENSOR_ID_START 10
 
 class AP_Proximity_Backend;
