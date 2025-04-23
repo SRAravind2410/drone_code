@@ -1095,7 +1095,7 @@ void AC_PosControl::set_pos_vel_accel_NE_cm(const Vector2p& pos_ne_cm, const Vec
 }
 
 // get_lean_angles_to_accel - convert roll, pitch lean target angles to lat/lon frame accelerations in cm/s/s
-Vector3f AC_PosControl::lean_angles_to_accel(const Vector3f& att_target_euler) const
+Vector3f AC_PosControl::lean_angles_to_accel_NEU_cmss(const Vector3f& att_target_euler) const
 {
     // rotate our roll, pitch angles into lat/lon frame
     const float sin_roll = sinf(att_target_euler.x);
@@ -1480,7 +1480,7 @@ void AC_PosControl::lean_angles_to_accel_NE_cmss(float& accel_n_cmss, float& acc
     // rotate our roll, pitch angles into lat/lon frame
     Vector3f att_target_euler = _attitude_control.get_att_target_euler_rad();
     att_target_euler.z = _ahrs.yaw;
-    Vector3f accel_ne_cmss = lean_angles_to_accel(att_target_euler);
+    Vector3f accel_ne_cmss = lean_angles_to_accel_NEU_cmss(att_target_euler);
 
     accel_n_cmss = accel_ne_cmss.x;
     accel_e_cmss = accel_ne_cmss.y;
